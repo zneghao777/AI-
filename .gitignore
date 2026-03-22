@@ -1,7 +1,13 @@
 node_modules/
+.venv/
+__pycache__/
+.idea/
 build/
 dist/
 coverage/
+output/
+run/
+tmp/
 .DS_Store
 *.log
 .env*

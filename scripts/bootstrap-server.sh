@@ -73,19 +73,43 @@ pkg_install() {
 ensure_python() {
   if command_exists python3; then
     echo "python3 is already installed: $(python3 --version 2>/dev/null)"
+  else
+    echo "Installing python3"
+    case "$PACKAGE_MANAGER" in
+      apt-get)
+        pkg_install python3 python3-venv python3-pip
+        ;;
+      dnf)
+        pkg_install python3 python3-pip
+        ;;
+      yum)
+        pkg_install python3 python3-pip
+        ;;
+    esac
+  fi
+}
+
+ensure_python_venv_support() {
+  if python3 - <<'PY' >/dev/null 2>&1
+import ensurepip
+PY
+  then
     return
   fi
 
-  echo "Installing python3"
+  echo "Installing Python venv support"
+
   case "$PACKAGE_MANAGER" in
     apt-get)
-      pkg_install python3 python3-venv python3-pip
+      local version
+      local major_minor
+      version="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+      major_minor="python${version}-venv"
+      pkg_install python3-venv "$major_minor"
       ;;
-    dnf)
-      pkg_install python3 python3-pip
-      ;;
-    yum)
-      pkg_install python3 python3-pip
+    dnf|yum)
+      echo "python3 venv support is missing. Install the matching python3-venv package manually for this distribution."
+      exit 1
       ;;
   esac
 }
@@ -143,6 +167,7 @@ if ! command_exists curl; then
 fi
 
 ensure_python
+ensure_python_venv_support
 
 if node_version_ok; then
   echo "Node.js is already installed: $(node --version)"

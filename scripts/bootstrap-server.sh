@@ -106,17 +106,29 @@ install_nodesource_node() {
   case "$PACKAGE_MANAGER" in
     apt-get)
       pkg_install ca-certificates curl gnupg
-      curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO -E bash -
+      if [[ -n "$SUDO" ]]; then
+        curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO -E bash -
+      else
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+      fi
       pkg_install nodejs
       ;;
     dnf)
       pkg_install ca-certificates curl
-      curl -fsSL https://rpm.nodesource.com/setup_20.x | $SUDO bash -
+      if [[ -n "$SUDO" ]]; then
+        curl -fsSL https://rpm.nodesource.com/setup_20.x | $SUDO bash -
+      else
+        curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+      fi
       pkg_install nodejs
       ;;
     yum)
       pkg_install ca-certificates curl
-      curl -fsSL https://rpm.nodesource.com/setup_20.x | $SUDO bash -
+      if [[ -n "$SUDO" ]]; then
+        curl -fsSL https://rpm.nodesource.com/setup_20.x | $SUDO bash -
+      else
+        curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+      fi
       pkg_install nodejs
       ;;
   esac

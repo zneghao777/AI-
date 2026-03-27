@@ -411,6 +411,15 @@ type GeneratedImage = {
   textResponse?: string;
 };
 
+type GenerationSettings = {
+  resolution: string;
+  customPrompt: string;
+  naturalLight: number;
+  indirectLight: number;
+  rtxEnabled: boolean;
+  styleId: string;
+};
+
 type GalleryItem = {
   id: string;
   imageUrl: string;
@@ -446,31 +455,31 @@ const STYLE_PRESETS: StylePreset[] = [
     id: 'modern-minimal',
     name: '现代简约',
     description: '线条克制，空间干净，适合大多数公共区域与卧室。',
-    prompt: '整体风格采用现代简约路线，强调干净利落的线条、舒展的留白、克制的中性色、细腻木饰面与哑光石材。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。三张图保持同一套材质、配色与设计语言。',
+    prompt: '整体风格采用现代简约路线，强调干净利落的线条、舒展的留白、克制的中性色、细腻木饰面与哑光石材。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。单张图需要保持统一的材质、配色与设计语言。',
   },
   {
     id: 'cream-wood',
     name: '奶油原木',
     description: '柔和温暖，适合家庭向、放松感更强的空间。',
-    prompt: '整体风格采用奶油原木，空间基调温暖柔和，以奶油白、浅米色和自然木色为主，搭配圆润家具、细腻布艺和轻松治愈的居住氛围。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。三张图保持统一的色彩、材质与软装逻辑。',
+    prompt: '整体风格采用奶油原木，空间基调温暖柔和，以奶油白、浅米色和自然木色为主，搭配圆润家具、细腻布艺和轻松治愈的居住氛围。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。单张图需要保持统一的色彩、材质与软装逻辑。',
   },
   {
     id: 'new-chinese',
     name: '新中式',
     description: '东方气质更强，适合茶室、佛堂、玄关等区域。',
-    prompt: '整体风格采用新中式，以东方秩序、木质格栅、雅致石材、沉稳配色和留白意境塑造高级居住氛围，避免传统符号的堆砌。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。三张图保持同一套东方审美与材质体系。',
+    prompt: '整体风格采用新中式，以东方秩序、木质格栅、雅致石材、沉稳配色和留白意境塑造高级居住氛围，避免传统符号的堆砌。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。单张图需要保持统一的东方审美与材质体系。',
   },
   {
     id: 'french-elegant',
     name: '轻法式',
     description: '精致柔美，适合卧室、客厅、餐厅等主生活场景。',
-    prompt: '整体风格采用轻法式，空间强调柔和线脚、优雅比例、浅暖色调、精致金属与法式软装细节，整体高级但不过分繁复。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。三张图保持统一的法式细节和色彩氛围。',
+    prompt: '整体风格采用轻法式，空间强调柔和线脚、优雅比例、浅暖色调、精致金属与法式软装细节，整体高级但不过分繁复。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。单张图需要保持统一的法式细节和色彩氛围。',
   },
   {
     id: 'wabi-sabi',
     name: '侘寂自然',
     description: '材质感更强，适合书房、主卧、露台和休闲空间。',
-    prompt: '整体风格采用侘寂自然路线，强调天然肌理、低饱和色彩、微水泥、木材、石材与松弛宁静的光影关系，气质朴素但高级。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。三张图保持统一的自然材料与安静氛围。',
+    prompt: '整体风格采用侘寂自然路线，强调天然肌理、低饱和色彩、微水泥、木材、石材与松弛宁静的光影关系，气质朴素但高级。呈现写实高端住宅室内摄影效果，必须是人视高度构图，空间具有真实纵深，不允许俯视、鸟瞰、轴测或平面图式画面。单张图需要保持统一的自然材料与安静氛围。',
   },
 ];
 
@@ -969,9 +978,9 @@ function ImmersivePreview3D({ selectedFloor, selectedRoom, galleryItems }: { sel
           <div className="rounded-full border border-white/10 bg-white/5 p-5 text-stone-100">
             <Box className="h-8 w-8" />
           </div>
-          <h3 className="mt-6 text-2xl font-bold text-white">当前还没有可进入沉浸漫游的图组</h3>
+          <h3 className="mt-6 text-2xl font-bold text-white">当前还没有可进入沉浸漫游的结果图</h3>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-400">
-            先为该房间生成一组效果图，系统才能基于三张视角图构建沉浸式预览舞台。
+            先为该房间生成至少一张效果图，系统才能基于结果图构建沉浸式预览舞台。
           </p>
         </div>
       </div>
@@ -1210,8 +1219,8 @@ function ImmersivePreview3D({ selectedFloor, selectedRoom, galleryItems }: { sel
               <p className="mt-5 text-[11px] uppercase tracking-[0.32em] text-stone-500">Immersive Entry</p>
               <h3 className="mt-3 text-3xl font-bold text-white">进入沉浸式空间预览</h3>
               <p className="mt-3 text-sm leading-relaxed text-stone-300">
-                已选择 {activeGalleryItem?.floorName} / {activeGalleryItem?.roomName} 图组。进入后会启动慢速镜头推进、分层景深和多机位包裹视效，
-                用来更直观地感受这组双视角效果图。
+                已选择 {activeGalleryItem?.floorName} / {activeGalleryItem?.roomName} 图组。进入后会启动慢速镜头推进、分层景深和单图景深包裹视效，
+                用来更直观地感受这张效果图的空间氛围。
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-stone-300">
                 <div className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">当前图组 {activeImageUrls.length} 张视角</div>
@@ -1318,7 +1327,7 @@ function ImmersivePreview3D({ selectedFloor, selectedRoom, galleryItems }: { sel
                       </div>
                       <div className="px-4 py-4">
                         <p className="text-[11px] text-stone-400">视角组</p>
-                        <p className="mt-1 text-sm text-stone-200">{(item.viewLabels ?? []).join(' / ') || '双视角方案'}</p>
+                        <p className="mt-1 text-sm text-stone-200">{(item.viewLabels ?? []).join(' / ') || '单图方案'}</p>
                         <p className="mt-3 text-[11px] text-[#f3d388]">点击进入沉浸漫游</p>
                       </div>
                     </button>
@@ -1554,7 +1563,7 @@ function MainCanvas({ selectedFloor, selectedRoom, galleryItems, setSelectedRoom
   );
 }
 
-function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selectedStyleId, onStyleChange, onGenerate, onOpenEditor, showRightPanel }: any) {
+function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selectedStyleId, onStyleChange, onGenerate, onOpenEditor, showRightPanel, isManualCalibrationComplete }: any) {
   const [resolution, setResolution] = useState('2k');
   const [customPrompt, setCustomPrompt] = useState('');
   const [naturalLight, setNaturalLight] = useState(75);
@@ -1621,6 +1630,14 @@ function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selec
               <div>
                 <label className="block text-[10px] lg:text-[11px] font-bold text-stone-500 uppercase mb-3 tracking-widest">AI 裁剪区域</label>
                 <div className="rounded-sm border border-stone-800 bg-stone-900/60 p-3 space-y-3">
+                  <div className={`flex items-center justify-between rounded-sm border px-3 py-2 text-[10px] ${
+                    isManualCalibrationComplete
+                      ? 'border-emerald-900/60 bg-emerald-950/40 text-emerald-200'
+                      : 'border-amber-900/60 bg-amber-950/30 text-amber-100'
+                  }`}>
+                    <span className="font-semibold tracking-[0.16em] uppercase">人工校准状态</span>
+                    <span>{isManualCalibrationComplete ? '已完成' : '待确认'}</span>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
@@ -1633,7 +1650,7 @@ function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selec
                         alt={`${selectedRoom?.name}裁剪预览`}
                         className="mt-2 aspect-square w-full rounded-sm border border-stone-800 object-contain bg-[#f8f3e7]"
                       />
-                      <p className="mt-2 text-[10px] text-[#d8bd7a]">点击进入人工校准</p>
+                      <p className="mt-2 text-[10px] text-[#d8bd7a]">{isManualCalibrationComplete ? '点击重新校准轮廓' : '点击进入人工校准'}</p>
                     </button>
                     <div className="rounded-sm border border-stone-800 bg-stone-950/70 p-2">
                       <p className="text-[9px] uppercase tracking-[0.16em] text-stone-500">定位平面图</p>
@@ -1676,6 +1693,11 @@ function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selec
                   <p className="text-[10px] leading-relaxed text-stone-400">
                     当前裁剪只取内墙线以内的空间，作为后续 AI 精装生成的保守有效区域，不向相邻房间外扩。
                   </p>
+                  {!isManualCalibrationComplete && (
+                    <p className="text-[10px] leading-relaxed text-amber-200">
+                      生成前必须先完成人工裁剪校准。你可以不改动轮廓，但需要至少保存一次人工校准结果。
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -1695,7 +1717,7 @@ function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selec
                   className={`px-2 lg:px-3 py-2 lg:py-3 border flex flex-col items-center gap-1 transition-colors rounded-sm ${resolution === '2k' ? 'border-tertiary bg-tertiary/10 text-tertiary-fixed-dim' : 'border-stone-800 bg-stone-900/50 hover:border-stone-600 text-stone-300'}`}
                 >
                   <span className="text-[11px] lg:text-xs font-bold">2K</span>
-                  <span className={`text-[9px] lg:text-[10px] ${resolution === '2k' ? 'text-tertiary-fixed-dim/70' : 'text-stone-500'}`}>推荐双视角</span>
+                  <span className={`text-[9px] lg:text-[10px] ${resolution === '2k' ? 'text-tertiary-fixed-dim/70' : 'text-stone-500'}`}>推荐精细单图</span>
                 </button>
               </div>
             </div>
@@ -1755,6 +1777,11 @@ function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selec
       </div>
       
       <div className="p-4 lg:p-6 bg-stone-900/50 backdrop-blur-md">
+        {!isManualCalibrationComplete && (
+          <p className="mb-3 text-[10px] leading-relaxed text-amber-200">
+            当前房间还没有保存过人工校准。点击下方按钮会先进入裁剪校准，再继续生成。
+          </p>
+        )}
         <motion.button 
           onClick={() => onGenerate({
             resolution,
@@ -1769,14 +1796,14 @@ function RightSidebar({ selectedFloor, selectedRoom, selectedSegmentation, selec
           className="w-full py-3 lg:py-4 bg-gradient-to-r from-primary-container to-primary text-white font-headline font-extrabold text-xs lg:text-sm tracking-[0.2em] shadow-2xl hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 lg:gap-3 rounded-sm"
         >
           <Sparkles className="w-4 h-4 lg:w-5 lg:h-5" />
-          生成双视角效果图
+          {isManualCalibrationComplete ? '生成单张效果图' : '先人工校准再生成'}
         </motion.button>
       </div>
     </aside>
   );
 }
 
-function CropEditorModal({ isOpen, floor, room, baseRoom, floorImage, onClose, onSave }: any) {
+function CropEditorModal({ isOpen, floor, room, baseRoom, floorImage, onClose, onSave, saveButtonLabel, footerHint }: any) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const [draftAreas, setDraftAreas] = useState<Point[][]>([]);
   const [activeHandle, setActiveHandle] = useState<{ areaIndex: number; pointIndex: number } | null>(null);
@@ -2040,7 +2067,11 @@ function CropEditorModal({ isOpen, floor, room, baseRoom, floorImage, onClose, o
                 </div>
               </div>
 
-              <div className="sticky bottom-0 mt-6 flex flex-wrap gap-3 border-t border-stone-800 bg-stone-950 pt-4">
+              <div className="sticky bottom-0 mt-6 border-t border-stone-800 bg-stone-950 pt-4">
+                {footerHint && (
+                  <p className="mb-3 text-xs leading-relaxed text-amber-200">{footerHint}</p>
+                )}
+                <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => {
                     if (!baseRoom) return;
@@ -2056,8 +2087,9 @@ function CropEditorModal({ isOpen, floor, room, baseRoom, floorImage, onClose, o
                   取消
                 </button>
                 <button onClick={handleSave} className="rounded-lg bg-[#8a6a17] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#9d7a1d]">
-                  保存人工校准
+                  {saveButtonLabel ?? '保存人工校准'}
                 </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2102,7 +2134,7 @@ function GalleryView({ galleryItems }: { galleryItems: GalleryItem[] }) {
   const activeImageUrls = activeGalleryItem?.imageUrls ?? (activeGalleryItem ? [activeGalleryItem.imageUrl] : []);
   const activeViewLabels = activeGalleryItem?.viewLabels ?? [];
   const activeImageUrl = activeImageUrls[activeImageIndex] ?? activeGalleryItem?.imageUrl ?? '';
-  const activeImageLabel = activeViewLabels[activeImageIndex] ?? `视角 ${activeImageIndex + 1}`;
+  const activeImageLabel = activeViewLabels[activeImageIndex] ?? `结果图 ${activeImageIndex + 1}`;
 
   useEffect(() => {
     if (!activeGalleryItem) return undefined;
@@ -2186,7 +2218,7 @@ function GalleryView({ galleryItems }: { galleryItems: GalleryItem[] }) {
                         {viewLabels.length > 0 && (
                           <div className="mt-1 text-[11px] text-white/75">{viewLabels.join(' / ')}</div>
                         )}
-                        <div className="mt-2 text-[11px] font-medium text-[#f3d388]">点击浏览整组效果图</div>
+                        <div className="mt-2 text-[11px] font-medium text-[#f3d388]">点击查看生成结果</div>
                       </div>
                     </div>
                   </button>
@@ -2270,7 +2302,7 @@ function GalleryView({ galleryItems }: { galleryItems: GalleryItem[] }) {
                   </div>
 
                   <div className="mt-5 rounded-xl border border-stone-800 bg-stone-900/70 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-stone-500">双视角结果</p>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-stone-500">生成结果</p>
                     <div className="mt-3 space-y-3">
                       {activeImageUrls.map((imageUrl, index) => (
                         <button
@@ -2305,7 +2337,7 @@ function GalleryView({ galleryItems }: { galleryItems: GalleryItem[] }) {
                       className="inline-flex items-center gap-2 rounded-lg border border-stone-700 px-4 py-2 text-sm font-medium text-stone-200 transition-colors hover:bg-stone-800"
                     >
                       <Download className="h-4 w-4" />
-                      下载当前视角
+                      下载当前图片
                     </a>
                   </div>
                 </div>
@@ -2381,10 +2413,10 @@ function BackgroundGenerationDock({ isGenerating, generatedImages, generationCon
 
   const title = isGenerating ? '后台生图中' : generationError ? '本次生成失败' : '本次生成已完成';
   const description = isGenerating
-    ? `${generationContext.floorName} / ${generationContext.roomName} 正在后台生成双视角图组，可继续操作页面。`
+    ? `${generationContext.floorName} / ${generationContext.roomName} 正在后台生成单张效果图，可继续操作页面。`
     : generationError
       ? `${generationContext.floorName} / ${generationContext.roomName} 生成失败，可查看详情后重试。`
-      : `${generationContext.floorName} / ${generationContext.roomName} 的双视角结果已保存到图库。`;
+      : `${generationContext.floorName} / ${generationContext.roomName} 的生成结果已保存到图库。`;
 
   return (
     <div className="fixed bottom-4 right-4 z-[90] w-[320px] max-w-[calc(100vw-2rem)] rounded-2xl border border-stone-800 bg-stone-950/96 p-4 text-stone-100 shadow-2xl backdrop-blur-md">
@@ -2528,7 +2560,7 @@ function GenerationModal({ isOpen, isGenerating, generatedImages, generationCont
                       />
                     </div>
                     <p className="text-sm font-medium text-stone-600">
-                      正在生成两张高一致性的室内视角图，完成后可直接进入沉浸漫游。
+                      正在生成当前房间的单张主视角效果图，完成后可直接进入沉浸漫游。
                     </p>
                     {generationContext && (
                       <p className="text-xs leading-relaxed text-stone-500">
@@ -2564,7 +2596,7 @@ function GenerationModal({ isOpen, isGenerating, generatedImages, generationCont
                 transition={{ duration: 0.5 }}
                 className="grid h-full w-full gap-6 overflow-auto p-6 lg:grid-cols-[minmax(0,1fr)_240px]"
               >
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4">
                   {generatedImages.map((image: GeneratedImage) => (
                     <div key={image.viewId} className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
                       <div className="flex items-center justify-between border-b border-stone-100 px-4 py-3">
@@ -2672,6 +2704,7 @@ export default function App() {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [generationContext, setGenerationContext] = useState<any>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [pendingGenerationSettings, setPendingGenerationSettings] = useState<GenerationSettings | null>(null);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -2795,6 +2828,10 @@ export default function App() {
     }),
   }));
   const selectedStyle = STYLE_PRESETS.find((item) => item.id === selectedStyleId) ?? STYLE_PRESETS[0];
+  const selectedFloor = floors.find(f => f.rooms.some(r => r.id === selectedRoomId)) || floors[0];
+  const selectedRoom = selectedFloor.rooms.find(r => r.id === selectedRoomId) || selectedFloor.rooms[0];
+  const selectedSegmentation = buildRoomSegmentation(selectedFloor.id, selectedRoom);
+  const isManualCalibrationComplete = Boolean(roomOverrides[selectedRoom.id]);
 
   const clearGenerationTask = () => {
     setIsGenerating(false);
@@ -2804,18 +2841,18 @@ export default function App() {
     setIsGenerationModalOpen(false);
   };
 
-  const handleGenerate = async (settings: any) => {
-    const segmentation = buildRoomSegmentation(selectedFloor.id, selectedRoom);
+  const handleGenerate = async (settings: GenerationSettings, roomOverride?: RoomOverride) => {
+    const roomForGeneration = roomOverride ? { ...selectedRoom, ...roomOverride } : selectedRoom;
+    const segmentation = buildRoomSegmentation(selectedFloor.id, roomForGeneration);
     const normalizedResolution = settings.resolution === '1080p' ? '1K' : settings.resolution === '2k' ? '2K' : String(settings.resolution).toUpperCase();
     const prompt = [
       selectedStyle.prompt,
-      selectedRoom.basePrompt,
+      roomForGeneration.basePrompt,
       `自然光强度约为 ${settings.naturalLight}%，让空间明暗关系自然真实。`,
       `间接照明强度约为 ${settings.indirectLight}%，灯带与辅助照明需要和主风格统一。`,
       settings.rtxEnabled ? '开启真实反射、玻璃、金属与石材的高品质材质表现。' : '保持柔和自然的光影，不要出现过强反光和夸张高光。',
-      '请基于当前房间平面图裁剪区域，生成两张高一致性的室内效果图。',
-      '两张图必须是同一个房间、同一套设计、同一套家具、同一套材质、同一套灯光，只允许镜头位置和朝向不同。',
-      '第一张为主视角，完整展示主要功能区；第二张为明显不同的对角或侧向视角，强调空间纵深，但必须一眼看出和第一张是同一个房间。',
+      '请基于当前房间平面图裁剪区域，生成一张高质量的室内效果图。',
+      '这张图必须完整展示当前房间最有代表性的主视角，优先体现主要功能区、空间纵深和核心材质关系。',
       '必须是正常室内建筑摄影视角，禁止俯视、鸟瞰、轴测、全景、鱼眼、拼图、分镜、三联画。',
       '画面保持清晰真实，禁止模糊滤镜、雾化、运动模糊、过强景深。',
       '空间功能必须单一明确，不要重复主景家具，不要混入其他房间的功能元素。',
@@ -2829,8 +2866,8 @@ export default function App() {
     setGenerationContext({
       floorId: selectedFloor.id,
       floorName: selectedFloor.name,
-      roomId: selectedRoom.id,
-      roomName: selectedRoom.name,
+      roomId: roomForGeneration.id,
+      roomName: roomForGeneration.name,
       styleName: selectedStyle.name,
       resolution: normalizedResolution,
       customPrompt: settings.customPrompt,
@@ -2850,11 +2887,11 @@ export default function App() {
         body: JSON.stringify({
           floorId: selectedFloor.id,
           floorName: selectedFloor.name,
-          roomId: selectedRoom.id,
-          roomName: selectedRoom.name,
+          roomId: roomForGeneration.id,
+          roomName: roomForGeneration.name,
           prompt,
           resolution: normalizedResolution,
-          polygons: selectedRoom.areas,
+          polygons: roomForGeneration.areas,
         }),
       });
 
@@ -2883,7 +2920,7 @@ export default function App() {
         viewLabels: images.map((image) => image.label),
         createdAt,
         floorName: selectedFloor.name,
-        roomName: selectedRoom.name,
+        roomName: roomForGeneration.name,
         prompt,
         coveragePercent: segmentation?.coveragePercent ?? 0,
       };
@@ -2891,7 +2928,7 @@ export default function App() {
         id: crypto.randomUUID(),
         date: new Date(createdAt).toLocaleString('zh-CN'),
         floor: selectedFloor.name,
-        room: selectedRoom.name,
+        room: roomForGeneration.name,
         status: '已完成',
         resolution: normalizedResolution,
         imageUrl: images[0].imageUrl,
@@ -2912,7 +2949,7 @@ export default function App() {
         id: crypto.randomUUID(),
         date: new Date().toLocaleString('zh-CN'),
         floor: selectedFloor.name,
-        room: selectedRoom.name,
+        room: roomForGeneration.name,
         status: '失败',
         resolution: normalizedResolution,
       };
@@ -2923,14 +2960,20 @@ export default function App() {
     }
   };
 
+  const requestGeneration = (settings: GenerationSettings) => {
+    if (!isManualCalibrationComplete) {
+      setPendingGenerationSettings(settings);
+      setIsCropEditorOpen(true);
+      return;
+    }
+
+    void handleGenerate(settings);
+  };
+
   const handleSaveToGallery = () => {
     clearGenerationTask();
     setView('gallery');
   };
-
-  const selectedFloor = floors.find(f => f.rooms.some(r => r.id === selectedRoomId)) || floors[0];
-  const selectedRoom = selectedFloor.rooms.find(r => r.id === selectedRoomId) || selectedFloor.rooms[0];
-  const selectedSegmentation = buildRoomSegmentation(selectedFloor.id, selectedRoom);
 
   return (
     <div className="bg-background text-on-background font-body select-none overflow-hidden flex h-[100dvh] flex-col">
@@ -2971,12 +3014,16 @@ export default function App() {
               selectedRoom={selectedRoom} 
               selectedSegmentation={selectedSegmentation}
               selectedStyleId={selectedStyle.id}
+              isManualCalibrationComplete={isManualCalibrationComplete}
               onStyleChange={setSelectedStyleId}
-              onGenerate={(settings: any) => {
+              onGenerate={(settings: GenerationSettings) => {
                 if (window.innerWidth < 1024) setShowRightPanel(false);
-                handleGenerate(settings);
+                requestGeneration(settings);
               }} 
-              onOpenEditor={() => setIsCropEditorOpen(true)}
+              onOpenEditor={() => {
+                setPendingGenerationSettings(null);
+                setIsCropEditorOpen(true);
+              }}
               showRightPanel={showRightPanel}
             />
           </>
@@ -2991,10 +3038,20 @@ export default function App() {
         room={selectedRoom}
         baseRoom={FLOORS.find((floor) => floor.id === selectedFloor.id)?.rooms.find((room) => room.id === selectedRoom.id)}
         floorImage={FLOOR_PLAN_IMAGES[selectedFloor.id]}
-        onClose={() => setIsCropEditorOpen(false)}
+        onClose={() => {
+          setIsCropEditorOpen(false);
+          setPendingGenerationSettings(null);
+        }}
+        saveButtonLabel={pendingGenerationSettings ? '保存人工校准并开始生成' : '保存人工校准'}
+        footerHint={pendingGenerationSettings ? '当前正在补齐生成前置校准。保存后会直接继续刚才的生成请求。' : undefined}
         onSave={(roomId: string, override: RoomOverride) => {
           setRoomOverrides((current) => ({ ...current, [roomId]: override }));
           setIsCropEditorOpen(false);
+          if (pendingGenerationSettings) {
+            const queuedSettings = pendingGenerationSettings;
+            setPendingGenerationSettings(null);
+            void handleGenerate(queuedSettings, override);
+          }
         }}
       />
       

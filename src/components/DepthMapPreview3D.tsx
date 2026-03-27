@@ -89,15 +89,11 @@ export function DepthMapPreview3D({
   const activeImageUrls =
     activeGalleryItem?.imageUrls?.length ? activeGalleryItem.imageUrls : activeGalleryItem ? [activeGalleryItem.imageUrl] : [];
   const activeViewLabels = activeGalleryItem?.viewLabels?.length ? activeGalleryItem.viewLabels : ['主视角'];
-  const tourImages = activeImageUrls.slice(0, Math.min(activeImageUrls.length, 2));
-  const tourLabels = activeViewLabels.slice(0, Math.min(activeViewLabels.length, 2));
-  const hasDualViews = tourImages.length >= 2;
-  const visibleLabel = hasDualViews
-    ? visualProgress < 0.5
-      ? tourLabels[0] ?? '主视角'
-      : tourLabels[1] ?? '第二视角'
-    : tourLabels[0] ?? '主视角';
-  const backgroundImageUrl = hasDualViews && visualProgress > 0.5 ? tourImages[1] : tourImages[0] ?? '';
+  const tourImages = activeImageUrls.length > 0 ? [activeImageUrls[0]] : [];
+  const tourLabels = [activeViewLabels[0] ?? '主视角'];
+  const hasDualViews = false;
+  const visibleLabel = tourLabels[0] ?? '主视角';
+  const backgroundImageUrl = tourImages[0] ?? '';
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -241,7 +237,7 @@ export function DepthMapPreview3D({
           <div className="rounded-full border border-white/10 bg-white/5 p-5 text-stone-100">
             <Box className="h-8 w-8" />
           </div>
-          <h3 className="mt-6 text-2xl font-bold text-white">当前还没有可进入沉浸漫游的图组</h3>
+          <h3 className="mt-6 text-2xl font-bold text-white">当前还没有可进入沉浸漫游的结果图</h3>
         </div>
       </div>
     );
@@ -250,7 +246,7 @@ export function DepthMapPreview3D({
   const primaryImageUrl = tourImages[0] ?? '';
   const secondaryImageUrl = tourImages[1] ?? '';
   const primaryLabel = tourLabels[0] ?? '主视角';
-  const secondaryLabel = tourLabels[1] ?? '第二视角';
+  const secondaryLabel = tourLabels[1] ?? '结果图 2';
   const progressPercent = Math.round(tourProgress * 100);
   const displayProgressPercent = Math.round(visualProgress * 100);
 
@@ -400,12 +396,12 @@ export function DepthMapPreview3D({
             {visibleLabel}
           </div>
           <div className="absolute right-4 top-4 rounded-full border border-white/10 bg-black/48 px-3 py-1.5 text-[11px] font-semibold text-stone-100 backdrop-blur-md">
-            {hasDualViews ? `双视角过渡 ${displayProgressPercent}%` : '单图查看'}
+            {hasDualViews ? `漫游进度 ${displayProgressPercent}%` : '单图沉浸'}
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-5 flex justify-center px-5">
             <div className="rounded-full border border-white/10 bg-black/48 px-4 py-2 text-[11px] font-medium text-stone-200 backdrop-blur-md">
-              {hasDualViews ? '拖动或方向键在两张视角间漫游' : '当前图组只有一张图，可直接查看原图'}
+              {hasDualViews ? '拖动或方向键在多张结果图之间漫游' : '当前沉浸预览基于单张结果图做景深与光感增强'}
             </div>
           </div>
         </div>
@@ -470,13 +466,13 @@ export function DepthMapPreview3D({
                       <div className="mt-2 flex items-center justify-between text-[11px] text-stone-400">
                         <span>主视角</span>
                         <span>过渡进度 {progressPercent}%</span>
-                        <span>第二视角</span>
+                        <span>结果图 2</span>
                       </div>
                     </div>
                   </>
                 ) : (
                   <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-stone-300">
-                    当前图组只有一张图，系统会保持原图清晰查看，不做额外模糊处理。
+                    当前沉浸预览使用单张结果图作为主画面，并叠加轻微景深、呼吸感和光晕变化来增强空间代入感。
                   </div>
                 )}
 
@@ -538,8 +534,8 @@ export function DepthMapPreview3D({
               <div className="flex shrink-0 items-start justify-between gap-6 border-b border-white/8 px-5 py-5 md:px-6">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.24em] text-stone-500">Preview Source</p>
-                  <h3 className="mt-2 text-xl font-bold text-white md:text-2xl">选择已生成图组进入沉浸漫游</h3>
-                  <p className="mt-2 text-sm text-stone-400">新的图组会优先使用双视角沉浸浏览，旧结果也可继续查看。</p>
+                  <h3 className="mt-2 text-xl font-bold text-white md:text-2xl">选择已生成结果进入沉浸漫游</h3>
+                  <p className="mt-2 text-sm text-stone-400">系统会基于封面结果图构建单图沉浸预览，方便快速感受空间氛围。</p>
                 </div>
                 <button
                   type="button"
@@ -554,7 +550,7 @@ export function DepthMapPreview3D({
                 <div className="grid grid-cols-1 gap-4 pb-2 md:grid-cols-2 xl:grid-cols-3">
                   {pickerItems.map((item) => {
                     const imageUrls = item.imageUrls?.length ? item.imageUrls : [item.imageUrl];
-                    const previewUrls = imageUrls.slice(0, Math.min(imageUrls.length, 2));
+                    const previewUrls = imageUrls.length > 0 ? [imageUrls[0]] : [];
                     const isActive = item.id === activeItemId;
 
                     return (
@@ -585,9 +581,8 @@ export function DepthMapPreview3D({
                               />
                             </div>
                           ))}
-                          {previewUrls.length === 1 && <div className="aspect-[4/3] bg-black/40" />}
                           <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] font-semibold text-white backdrop-blur-md">
-                            {imageUrls.length > 1 ? `${Math.min(imageUrls.length, 2)} 视角沉浸` : '单图查看'}
+                            单图沉浸
                           </div>
                           <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/82 to-transparent p-4">
                             <p className="text-base font-semibold text-white">{item.roomName}</p>
@@ -602,7 +597,7 @@ export function DepthMapPreview3D({
                           </div>
                           <p className="line-clamp-2 text-sm leading-relaxed text-stone-300">{item.prompt}</p>
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-stone-500">{(item.viewLabels ?? []).slice(0, 2).join(' / ') || '双视角图组'}</span>
+                            <span className="text-xs font-medium text-stone-500">{(item.viewLabels ?? []).slice(0, 1).join(' / ') || '单图结果'}</span>
                             <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-white">
                               进入漫游
                             </span>

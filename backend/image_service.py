@@ -96,7 +96,10 @@ def get_api_key() -> str | None:
 
 def get_base_url() -> str | None:
     load_project_env()
-    return os.environ.get("GEMINI_BASE_URL")
+    return (
+        os.environ.get("GOOGLE_GEMINI_BASE_URL")
+        or os.environ.get("GEMINI_BASE_URL")
+    )
 
 
 def get_image_model() -> str:
@@ -721,86 +724,65 @@ def generate_room_image(
     ).strip()
 
     client = create_client(api_key, base_url)
-    view_presets = _build_view_presets(room_id, room_name)[:2]
-    generated_images: list[GeneratedView] = []
-    consistency_anchor_image: PILImage.Image | None = None
+    preset = _build_view_presets(room_id, room_name)[0]
+    output_path = GENERATED_DIR / f"{request_id}-{preset['id']}.png"
+    generated_image: PILImage.Image | None = None
+    text_response = ""
 
-    for index, preset in enumerate(view_presets):
-        output_path = GENERATED_DIR / f"{request_id}-{preset['id']}.png"
-        generated_image: PILImage.Image | None = None
-        text_response = ""
+    for layout_attempt in range(1, MAX_LAYOUT_REPAIR_ATTEMPTS + 1):
+        prompt_sections = [
+            base_prompt,
+            "Generate exactly one single image only.",
+            "This request needs one hero interior render for the finalized room design.",
+            "Keep the composition as one normal architectural interior render with high clarity.",
+            "Do not create a panorama, fisheye image, collage, split-frame, storyboard, contact sheet, or multi-panel layout.",
+            "The canvas must contain only one uninterrupted camera view. Never repeat the same room multiple times inside one image.",
+            preset["camera_prompt"],
+        ]
 
-        for layout_attempt in range(1, MAX_LAYOUT_REPAIR_ATTEMPTS + 1):
-            prompt_sections = [
-                base_prompt,
-                "Generate exactly one single image only.",
-                "This image belongs to a two-view set for the same finalized room design.",
-                "Both views must show the same room, the same fixed architecture, the same furniture, the same materials, and the same lighting strategy.",
-                "Do not redesign the room between views. Only change the camera position and camera direction.",
-                "Keep the composition as one normal architectural interior render with high clarity.",
-                "Do not create a panorama, fisheye image, collage, split-frame, storyboard, contact sheet, or multi-panel layout.",
-                "The canvas must contain only one uninterrupted camera view. Never repeat the same room multiple times inside one image.",
-                preset["camera_prompt"],
-            ]
-
-            contents: list[object] = [
-                references.context_image,
-                references.local_context_image,
-                references.crop_image,
-                references.mask_image,
-            ]
-
-            if consistency_anchor_image is not None:
-                prompt_sections.extend(
-                    [
-                        "The additional generated reference image shows the already approved first view of this exact room.",
-                        "Use it as a strict consistency anchor for architecture, furniture identities, materials, lighting, decorative language, and all design decisions.",
-                        "The second view must be clearly different in camera position from the first view while still looking unquestionably like the same room.",
-                    ]
-                )
-                contents.append(consistency_anchor_image)
-
-            if layout_attempt > 1:
-                prompt_sections.extend(
-                    [
-                        f"Critical correction for retry {layout_attempt}: the previous image incorrectly repeated the scene multiple times in one canvas.",
-                        "This retry must return one single uninterrupted render only, with no stacked duplicates and no triptych layout.",
-                    ]
-                )
-
-            contents.append("\n".join(prompt_sections).strip())
-
-            response = _generate_with_retry(
-                client=client,
-                model_name=model_name,
-                contents=contents,
-                output_resolution=output_resolution,
+        if layout_attempt > 1:
+            prompt_sections.extend(
+                [
+                    f"Critical correction for retry {layout_attempt}: the previous image incorrectly repeated the scene multiple times in one canvas.",
+                    "This retry must return one single uninterrupted render only, with no stacked duplicates and no triptych layout.",
+                ]
             )
-            candidate_image, text_response = _save_generated_response_image(response, output_path)
 
-            if _detect_repeated_panel_boxes(candidate_image) is None:
-                generated_image = candidate_image
-                break
+        contents: list[object] = [
+            references.context_image,
+            references.local_context_image,
+            references.crop_image,
+            references.mask_image,
+            "\n".join(prompt_sections).strip(),
+        ]
 
-            generated_image = candidate_image
-
-        if generated_image is None:
-            raise RuntimeError(f"Failed to generate a usable image for {preset['label']}.")
-
-        generated_image, _ = _normalize_repeated_panel_image(generated_image, output_path)
-
-        if index == 0:
-            consistency_anchor_image = generated_image.copy()
-
-        generated_images.append(
-            GeneratedView(
-                output_path=output_path.resolve(),
-                output_url=f"/generated/{output_path.name}",
-                view_id=preset["id"],
-                label=preset["label"],
-                text_response=text_response,
-            )
+        response = _generate_with_retry(
+            client=client,
+            model_name=model_name,
+            contents=contents,
+            output_resolution=output_resolution,
         )
+        candidate_image, text_response = _save_generated_response_image(response, output_path)
+
+        if _detect_repeated_panel_boxes(candidate_image) is None:
+            generated_image = candidate_image
+            break
+
+        generated_image = candidate_image
+
+    if generated_image is None:
+        raise RuntimeError(f"Failed to generate a usable image for {preset['label']}.")
+
+    generated_image, _ = _normalize_repeated_panel_image(generated_image, output_path)
+    generated_images = [
+        GeneratedView(
+            output_path=output_path.resolve(),
+            output_url=f"/generated/{output_path.name}",
+            view_id=preset["id"],
+            label=preset["label"],
+            text_response=text_response,
+        )
+    ]
 
     return GenerationResult(
         model_name=model_name,

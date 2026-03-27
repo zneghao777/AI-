@@ -450,6 +450,24 @@ const STYLE_PRESET_STORAGE_KEY = 'villa-style-preset-v1';
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const cloneAreas = (areas: Point[][]): Point[][] => areas.map((area) => area.map(([x, y]) => [x, y] as Point));
 
+const parseApiResponse = async (response: Response) => {
+  const contentType = response.headers.get('content-type') || '';
+  const rawText = await response.text();
+
+  if (!rawText) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    const preview = rawText.slice(0, 120).replace(/\s+/g, ' ').trim();
+    throw new Error(
+      `接口没有返回 JSON，而是返回了 ${contentType || '未知类型'} 内容：${preview || '空响应'}。通常是前端代理打到了错误端口，或后端服务未正常启动。`
+    );
+  }
+};
+
 const STYLE_PRESETS: StylePreset[] = [
   {
     id: 'modern-minimal',
@@ -2759,8 +2777,8 @@ export default function App() {
         }
 
         const [galleryPayload, historyPayload] = await Promise.all([
-          galleryResponse.json(),
-          historyResponse.json(),
+          parseApiResponse(galleryResponse),
+          parseApiResponse(historyResponse),
         ]);
 
         if (cancelled) return;
@@ -2795,7 +2813,7 @@ export default function App() {
       });
 
       if (!response.ok) return null;
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       return payload.item ?? null;
     } catch {
       return null;
@@ -2813,7 +2831,7 @@ export default function App() {
       });
 
       if (!response.ok) return null;
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       return payload.item ?? null;
     } catch {
       return null;
@@ -2895,7 +2913,7 @@ export default function App() {
         }),
       });
 
-      const payload = await response.json();
+      const payload = await parseApiResponse(response);
       if (!response.ok) {
         throw new Error(payload.detail || '图像生成失败，请稍后重试。');
       }
